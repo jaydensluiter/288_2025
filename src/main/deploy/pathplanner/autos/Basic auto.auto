@@ -33,6 +33,12 @@
           "data": {
             "pathName": "Reef to feeder"
           }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "2nd reef"
+          }
         }
       ]
     }
