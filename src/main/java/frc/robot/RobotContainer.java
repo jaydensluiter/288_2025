@@ -20,7 +20,7 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 
 public class RobotContainer {
-    private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
+    private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond) * .9; // kSpeedAt12Volts desired top speed
     private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
 
     /* Setting up bindings for necessary control of the swerve drive platform */
@@ -63,9 +63,9 @@ public class RobotContainer {
         driver.share().and(driver.triangle()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
         driver.share().and(driver.square()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
         driver.options().and(driver.triangle()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
-        driver.options().and(driver.square()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
+driver.options().and(driver.square()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
-        // reset the field-centric heading on L1 press
+// reset the field-centric heading on L1 press
         driver.triangle().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
         drivetrain.registerTelemetry(logger::telemeterize);
