@@ -8,8 +8,11 @@ import static edu.wpi.first.units.Units.*;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.pathplanner.lib.auto.AutoBuilder;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
@@ -20,6 +23,11 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 
 public class RobotContainer {
+
+    
+
+    private final SendableChooser<Command> autoChooser;
+    
     private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond) * .9; // kSpeedAt12Volts desired top speed
     private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
 
@@ -30,15 +38,30 @@ public class RobotContainer {
     private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
     private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
 
+    /* Telemetry logger */
     private final Telemetry logger = new Telemetry(MaxSpeed);
 
+    /* Drive controllers */
     private final CommandPS4Controller driver = new CommandPS4Controller(0);
     private final CommandXboxController operator = new CommandXboxController(1);
 
+    // /* Subsystems */
+    // coralMech = new coralMech();
+
+    // /* Auto functions */
+    // NamedCommands.registerCommand("Coral T4 Prime", coralMech.exampleCommand());
+
+    /* Drivetrain */
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
+    
     public RobotContainer() {
-        configureBindings();
+        configureBindings(); //set controller bindings
+
+        // Build an auto chooser. This will use Commands.none() as the default option.
+        autoChooser = AutoBuilder.buildAutoChooser("Simple auto" );
+
+        SmartDashboard.putData("Auto Chooser", autoChooser);
     }
 
     private void configureBindings() {
