@@ -21,16 +21,17 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.CommandCoralElevator;
 import frc.robot.subsystems.CommandCoralPivot;
 
 public class RobotContainer {
 
-    
-
     private final SendableChooser<Command> autoChooser;
-    
-    private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond) * .9; // kSpeedAt12Volts desired top speed
-    private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
+
+    private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond) * .9; // kSpeedAt12Volts desired top
+                                                                                       // speed
+    private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second
+                                                                                      // max angular velocity
 
     /* Setting up bindings for necessary control of the swerve drive platform */
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
@@ -48,6 +49,7 @@ public class RobotContainer {
 
     // /* Subsystems */
     private final CommandCoralPivot coralMech = new CommandCoralPivot();
+    private final CommandCoralElevator coralElevator = new CommandCoralElevator();
 
     // /* Auto functions */
     // NamedCommands.registerCommand("Coral T4 Prime", coralMech.exampleCommand());
@@ -55,12 +57,11 @@ public class RobotContainer {
     /* Drivetrain */
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
-    
     public RobotContainer() {
-        configureBindings(); //set controller bindings
+        configureBindings(); // set controller bindings
 
         // Build an auto chooser. This will use Commands.none() as the default option.
-        autoChooser = AutoBuilder.buildAutoChooser("Simple auto" );
+        autoChooser = AutoBuilder.buildAutoChooser("Simple auto");
 
         SmartDashboard.putData("Auto Chooser", autoChooser);
     }
@@ -69,18 +70,16 @@ public class RobotContainer {
         // Note that X is defined as forward according to WPILib convention,
         // and Y is defined as to the left according to WPILib convention.
         drivetrain.setDefaultCommand(
-            // Drivetrain will execute this command periodically
-            drivetrain.applyRequest(() ->
-                drive.withVelocityX(-driver.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
-                    .withVelocityY(-driver.getLeftX() * MaxSpeed) // Drive left with negative X (left)
-                    .withRotationalRate(-driver.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
-            )
-        );
+                // Drivetrain will execute this command periodically
+                drivetrain.applyRequest(() -> drive.withVelocityX(-driver.getLeftY() * MaxSpeed) // Drive forward with
+                                                                                                 // negative Y (forward)
+                        .withVelocityY(-driver.getLeftX() * MaxSpeed) // Drive left with negative X (left)
+                        .withRotationalRate(-driver.getRightX() * MaxAngularRate) // Drive counterclockwise with
+                                                                                  // negative X (left)
+                ));
 
         driver.cross().whileTrue(drivetrain.applyRequest(() -> brake));
-        driver.circle().whileTrue(drivetrain.applyRequest(() ->
-            point.withModuleDirection(new Rotation2d(-driver.getLeftY(), -driver.getLeftX()))
-        ));
+        driver.circle().whileTrue(drivetrain.applyRequest(() -> point.withModuleDirection(new Rotation2d(-driver.getLeftY(), -driver.getLeftX()))));
 
         // Run SysId routines when holding share/options and triangle/square.
         // Note that each routine should be run exactly once in a single log.
@@ -91,10 +90,16 @@ public class RobotContainer {
 
         // reset the field-centric heading on L1 press
         driver.triangle().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
-        
+
+        /* Coral pivot */
         operator.povDown().whileTrue(coralMech.runOnce(() -> coralMech.PivotTo0()));
         operator.povRight().whileTrue(coralMech.runOnce(() -> coralMech.PivotTo90()));
         operator.povUp().whileTrue(coralMech.runOnce(() -> coralMech.PivotTo170()));
+
+        /* Elevator movement */
+        operator.a().whileTrue(coralElevator.runOnce(() -> coralElevator.RaiseToT2()));
+        operator.b().whileTrue(coralElevator.runOnce(() -> coralElevator.RaiseToT3()));
+        operator.y().whileTrue(coralElevator.runOnce(() -> coralElevator.RaiseToT4()));
         
         drivetrain.registerTelemetry(logger::telemeterize);
     }
