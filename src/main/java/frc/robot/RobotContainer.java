@@ -21,6 +21,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.CommandCoralPivot;
 
 public class RobotContainer {
 
@@ -46,7 +47,7 @@ public class RobotContainer {
     private final CommandXboxController operator = new CommandXboxController(1);
 
     // /* Subsystems */
-    // coralMech = new coralMech();
+    private final CommandCoralPivot coralMech = new CommandCoralPivot();
 
     // /* Auto functions */
     // NamedCommands.registerCommand("Coral T4 Prime", coralMech.exampleCommand());
@@ -86,11 +87,15 @@ public class RobotContainer {
         driver.share().and(driver.triangle()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
         driver.share().and(driver.square()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
         driver.options().and(driver.triangle()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
-driver.options().and(driver.square()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
+        driver.options().and(driver.square()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
-// reset the field-centric heading on L1 press
+        // reset the field-centric heading on L1 press
         driver.triangle().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
-
+        
+        operator.povDown().whileTrue(coralMech.runOnce(() -> coralMech.PivotTo0()));
+        operator.povRight().whileTrue(coralMech.runOnce(() -> coralMech.PivotTo90()));
+        operator.povUp().whileTrue(coralMech.runOnce(() -> coralMech.PivotTo170()));
+        
         drivetrain.registerTelemetry(logger::telemeterize);
     }
 
