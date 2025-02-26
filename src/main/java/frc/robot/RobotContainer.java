@@ -8,19 +8,31 @@ import static edu.wpi.first.units.Units.*;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+//import frc.robot.subsystems.CommandAlgaeMech;
+import frc.robot.subsystems.CommandCoralElevator;
+import frc.robot.subsystems.CommandCoralPivot;
 
 public class RobotContainer {
-    private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
-    private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
+
+    private final SendableChooser<Command> autoChooser;
+
+    private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond) * .9; // kSpeedAt12Volts desired top
+                                                                                       // speed
+    private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second
+                                                                                      // max angular velocity
 
     /* Setting up bindings for necessary control of the swerve drive platform */
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
@@ -29,48 +41,79 @@ public class RobotContainer {
     private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
     private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
 
+    /* Telemetry logger */
     private final Telemetry logger = new Telemetry(MaxSpeed);
 
-    private final CommandXboxController joystick = new CommandXboxController(0);
+    /* Drive controllers */
+    private final CommandPS4Controller driver = new CommandPS4Controller(0);
+    private final CommandXboxController operator = new CommandXboxController(1);
 
+    // /* Subsystems */
+    private final CommandCoralPivot coralMech = new CommandCoralPivot();
+    private final CommandCoralElevator coralElevator = new CommandCoralElevator();
+    //private final CommandAlgaeMech algaeMech = new CommandAlgaeMech();
+
+    // /* Auto functions */
+    // NamedCommands.registerCommand("Coral T4 Prime", coralMech.exampleCommand());
+
+    /* Drivetrain */
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
     public RobotContainer() {
-        configureBindings();
+        configureBindings(); // set controller bindings
+
+        // Build an auto chooser. This will use Commands.none() as the default option.
+        autoChooser = AutoBuilder.buildAutoChooser("Simple auto");
+
+        NamedCommands.registerCommand("Coral T4 Prime", coralMech.PivotTo170());
+
+        SmartDashboard.putData("Auto Chooser", autoChooser);
     }
 
     private void configureBindings() {
         // Note that X is defined as forward according to WPILib convention,
         // and Y is defined as to the left according to WPILib convention.
         drivetrain.setDefaultCommand(
-            // Drivetrain will execute this command periodically
-            drivetrain.applyRequest(() ->
-                drive.withVelocityX(-joystick.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
-                    .withVelocityY(-joystick.getLeftX() * MaxSpeed) // Drive left with negative X (left)
-                    .withRotationalRate(-joystick.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
-            )
-        );
+                // Drivetrain will execute this command periodically
+                drivetrain.applyRequest(() -> drive.withVelocityX(-driver.getLeftY() * MaxSpeed) // Drive forward with
+                                                                                                 // negative Y (forward)
+                        .withVelocityY(-driver.getLeftX() * MaxSpeed) // Drive left with negative X (left)
+                        .withRotationalRate(-driver.getRightX() * MaxAngularRate) // Drive counterclockwise with
+                                                                                  // negative X (left)
+                ));
 
-        joystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
-        joystick.b().whileTrue(drivetrain.applyRequest(() ->
-            point.withModuleDirection(new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))
-        ));
+        driver.cross().whileTrue(drivetrain.applyRequest(() -> brake));
+        driver.circle().whileTrue(drivetrain.applyRequest(() -> point.withModuleDirection(new Rotation2d(-driver.getLeftY(), -driver.getLeftX()))));
 
-        // Run SysId routines when holding back/start and X/Y.
+        // Run SysId routines when holding share/options and triangle/square.
         // Note that each routine should be run exactly once in a single log.
-        joystick.back().and(joystick.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
-        joystick.back().and(joystick.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
-        joystick.start().and(joystick.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
-        joystick.start().and(joystick.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
+        driver.share().and(driver.triangle()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
+        driver.share().and(driver.square()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
+        driver.options().and(driver.triangle()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
+        driver.options().and(driver.square()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
+        // reset the field-centric heading on L1 press
+        driver.triangle().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
-        // reset the field-centric heading on left bumper press
-        joystick.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
+        /* Coral pivot */
+        operator.povDown().whileTrue(coralMech.runOnce(() -> coralMech.PivotTo0()));
+        operator.povRight().whileTrue(coralMech.runOnce(() -> coralMech.PivotTo90()));
+        operator.povUp().whileTrue(coralMech.runOnce(() -> coralMech.PivotTo170()));
+
+        /* Elevator movement */
+        operator.a().whileTrue(coralElevator.Lower());
+        // operator.b().whileTrue(coralElevator.runOnce(() -> coralElevator.RaiseToT3()));
+        operator.y().whileTrue(coralElevator.Raise());
+        operator.a().onFalse(coralElevator.Stop());
+        operator.y().onFalse(coralElevator.Stop());
+
+        /* Algae mech */
+        //operator.b().whileTrue(algaeMech.runOnce(() -> algaeMech.PivotToAngle(0)));
 
         drivetrain.registerTelemetry(logger::telemeterize);
     }
 
     public Command getAutonomousCommand() {
-        return Commands.print("No autonomous command configured");
+        return autoChooser.getSelected();
     }
 }
