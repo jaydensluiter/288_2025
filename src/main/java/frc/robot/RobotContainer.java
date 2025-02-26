@@ -36,13 +36,6 @@ public class RobotContainer {
     private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second
                                                                                       // max angular velocity
 
-    private final SendableChooser<Command> autoChooser;
-
-    private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond) * .9; // kSpeedAt12Volts desired top
-                                                                                       // speed
-    private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second
-                                                                                      // max angular velocity
-
     /* Setting up bindings for necessary control of the swerve drive platform */
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
             .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
@@ -97,7 +90,7 @@ public class RobotContainer {
                         .withVelocityY(-driver.getLeftX() * MaxSpeed) // Drive left with negative X (left)
                         .withRotationalRate(-driver.getRightX() * MaxAngularRate) // Drive counterclockwise with
                                                                                   // negative X (left)
-                ));
+                );
 
         driver.cross().whileTrue(drivetrain.applyRequest(() -> brake));
         driver.circle().whileTrue(drivetrain.applyRequest(() -> point.withModuleDirection(new Rotation2d(-driver.getLeftY(), -driver.getLeftX()))));
