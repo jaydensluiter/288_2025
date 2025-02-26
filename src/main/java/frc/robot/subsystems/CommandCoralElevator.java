@@ -22,7 +22,7 @@ public class CommandCoralElevator implements Subsystem {
     /* Subsystem init */
     public CommandCoralElevator() {
         LiftEncoder.reset();
-
+        
     }
 
     /**
