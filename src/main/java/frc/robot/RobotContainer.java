@@ -14,6 +14,8 @@ import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -34,6 +36,13 @@ public class RobotContainer {
     private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second
                                                                                       // max angular velocity
 
+    private final SendableChooser<Command> autoChooser;
+
+    private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond) * .9; // kSpeedAt12Volts desired top
+                                                                                       // speed
+    private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second
+                                                                                      // max angular velocity
+
     /* Setting up bindings for necessary control of the swerve drive platform */
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
             .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
@@ -41,6 +50,7 @@ public class RobotContainer {
     private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
     private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
 
+    /* Telemetry logger */
     /* Telemetry logger */
     private final Telemetry logger = new Telemetry(MaxSpeed);
 
@@ -81,12 +91,26 @@ public class RobotContainer {
                         .withRotationalRate(-driver.getRightX() * MaxAngularRate) // Drive counterclockwise with
                                                                                   // negative X (left)
                 ));
+                // Drivetrain will execute this command periodically
+                drivetrain.applyRequest(() -> drive.withVelocityX(-driver.getLeftY() * MaxSpeed) // Drive forward with
+                                                                                                 // negative Y (forward)
+                        .withVelocityY(-driver.getLeftX() * MaxSpeed) // Drive left with negative X (left)
+                        .withRotationalRate(-driver.getRightX() * MaxAngularRate) // Drive counterclockwise with
+                                                                                  // negative X (left)
+                ));
 
+        driver.cross().whileTrue(drivetrain.applyRequest(() -> brake));
+        driver.circle().whileTrue(drivetrain.applyRequest(() -> point.withModuleDirection(new Rotation2d(-driver.getLeftY(), -driver.getLeftX()))));
         driver.cross().whileTrue(drivetrain.applyRequest(() -> brake));
         driver.circle().whileTrue(drivetrain.applyRequest(() -> point.withModuleDirection(new Rotation2d(-driver.getLeftY(), -driver.getLeftX()))));
 
         // Run SysId routines when holding share/options and triangle/square.
+        // Run SysId routines when holding share/options and triangle/square.
         // Note that each routine should be run exactly once in a single log.
+        driver.share().and(driver.triangle()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
+        driver.share().and(driver.square()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
+        driver.options().and(driver.triangle()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
+        driver.options().and(driver.square()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
         driver.share().and(driver.triangle()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
         driver.share().and(driver.square()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
         driver.options().and(driver.triangle()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
