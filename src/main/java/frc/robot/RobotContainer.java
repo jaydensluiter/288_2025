@@ -113,9 +113,9 @@ public class RobotContainer {
         driver.triangle().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
         /* Coral pivot */
-        operator.povDown().whileTrue(coralMech.runOnce(() -> coralMech.PivotTo0()));
-        operator.povRight().whileTrue(coralMech.runOnce(() -> coralMech.PivotTo90()));
-        operator.povUp().whileTrue(coralMech.runOnce(() -> coralMech.PivotTo170()));
+        // operator.povDown().whileTrue(coralMech.runOnce(() -> coralMech.PivotTo0()));
+        // operator.povRight().whileTrue(coralMech.runOnce(() -> coralMech.PivotTo90()));
+        // operator.povUp().whileTrue(coralMech.runOnce(() -> coralMech.PivotTo170()));
 
         /* Elevator movement */
         operator.a().whileTrue(coralElevator.Lower());
