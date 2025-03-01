@@ -4,8 +4,6 @@
 
 package frc.robot;
 
-import com.ctre.phoenix6.hardware.TalonFX;
-
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -14,8 +12,6 @@ public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
 
   private final RobotContainer m_robotContainer;
-  TalonFX PivotMotor = new TalonFX(13);
-  TalonFX LiftMotor = new TalonFX(14);
 
   public Robot() {
     m_robotContainer = new RobotContainer();
