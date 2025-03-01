@@ -2,78 +2,50 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix6.hardware.TalonFX;
 
-import edu.wpi.first.wpilibj.Encoder;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
+import edu.wpi.first.math.controller.PIDController;
 
 public class CommandCoralPivot implements Subsystem{
     private final TalonFX PivotMotor = new TalonFX(13); // Coral arm pivot motor
-    private final Encoder PivotEncoder = new Encoder(2, 3); // Encoder for the elevator lift
 
-    private static final double ENCODER_TICKS_PER_DEGREE = 2048.0 / 360.0; // Translate ticks to degrees
-    private static int PIVOT_TARGET = 0; // Target pivot point
-    private static final double PIVOT_MAX_SPEED = 0.5; // Max speed for the arm
+    public PIDController pivotPID = new PIDController(8, 0, 0.1); // PID controller for the pivot motor
+
+    private double kPrimeT4 = 0; // Setpoint for the pivot motor
+    private double kPrimet3 = .15; // Setpoint for the pivot motor
+    private double kPrimeT2 = .15; // Setpoint for the pivot motor
+    private double kPrimeLoad = .51; // Setpoint for the pivot motor
+    private double kStow = 0; // Setpoint for the pivot motor
 
     /* Subsystem init */
     public CommandCoralPivot() {
-        PivotEncoder.reset();
+        pivotPID.setTolerance(.01); // Set the tolerance for the PID controller
+        PivotMotor.setPosition(0);
+        pivotPID.reset();
     }
     
-    /* Get pivot angle */
-    public double getPivotAngle() {
-        double PivotAngle = PivotMotor.getPosition().getValueAsDouble() / ENCODER_TICKS_PER_DEGREE;
-        return PivotAngle;
+    /* Set point commands */
+
+    public Command setT4Command(){
+        return run(
+            () -> {
+                PivotMotor.set(MathUtil.clamp(pivotPID.calculate(PivotMotor.getPosition().getValueAsDouble(), kPrimeT4), -.9, .9)); // Set the pivot motor to the calculated PID value
+            });
     }
 
-    /**
-     * Moves the arm to a specific angle.
-     * @param targetAngle Target angle in degrees.
-     */
-    public void PivotToAngle(double targetAngle) {
-        double currentAngle = getPivotAngle();
-        double error = targetAngle - currentAngle;
-
-        // Simple proportional control (P-Control)
-        double kP = 0.02; // Adjust this constant for your system
-        double speed = kP * error;
-
-        // Limit the speed to avoid overshooting
-        speed = Math.max(-PIVOT_MAX_SPEED, Math.min(speed, PIVOT_MAX_SPEED));
-
-        // Run motor until close enough to the target angle
-        while (Math.abs(error) > 1.0) { // 1-degree tolerance
-            PivotMotor.set(speed);
-            currentAngle = getPivotAngle();
-            error = targetAngle - currentAngle;
-            speed = kP * error;
-            speed = Math.max(-PIVOT_MAX_SPEED, Math.min(speed, PIVOT_MAX_SPEED));
-        }
-
-        PivotMotor.stopMotor();
+    public Command setT3Command(){
+        return run(
+            () -> {
+                PivotMotor.set(MathUtil.clamp(pivotPID.calculate(PivotMotor.getPosition().getValueAsDouble(), kPrimet3), -.9, .9)); // Set the pivot motor to the calculated PID value
+            });
     }
 
-    public Command PivotTo90() {
-    return runOnce(
-        () -> {
-            PIVOT_TARGET = 90;
-            PivotToAngle(PIVOT_TARGET);
-        });
-  }
-
-  public Command PivotTo0() {
-    return runOnce(
-        () -> {
-            PIVOT_TARGET = 0;
-            PivotToAngle(PIVOT_TARGET);
-        });
-  }
-
-  public Command PivotTo170() {
-    return runOnce(
-        () -> {
-            PIVOT_TARGET = 170;
-            PivotToAngle(PIVOT_TARGET);
-        });
-  }
+    public Command setLoadCommand(){
+        return run(
+            () -> {
+                PivotMotor.set(MathUtil.clamp(pivotPID.calculate(PivotMotor.getPosition().getValueAsDouble(), kPrimeLoad), -.9, .9)); // Set the pivot motor to the calculated PID value
+            });
+    }
 }
-
