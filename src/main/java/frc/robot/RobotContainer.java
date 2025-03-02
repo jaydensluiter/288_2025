@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandCoralPivot;
+import frc.robot.subsystems.CommandElevator;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 
 public class RobotContainer {
@@ -49,6 +50,7 @@ public class RobotContainer {
 
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
     public final CommandCoralPivot coralPivot = new CommandCoralPivot();
+    public final CommandElevator elevator = new CommandElevator();
 
     public RobotContainer() {
         configureBindings();
@@ -89,6 +91,9 @@ public class RobotContainer {
         operator.povUp().onTrue(coralPivot.setT4Command());
         operator.povRight().onTrue(coralPivot.setT3Command());
         operator.povDown().onTrue(coralPivot.setLoadCommand());
+
+        /* Scoring macros */
+        operator.a().onTrue(Commands.parallel(coralPivot.setLoadCommand(), elevator.setLoadingPosition()).andThen(elevator.setStowPosition()));
         
         drivetrain.registerTelemetry(logger::telemeterize);
     }
