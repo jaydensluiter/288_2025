@@ -20,6 +20,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandCoralPivot;
 import frc.robot.subsystems.CommandElevator;
+import frc.robot.subsystems.CommandHang;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 
 public class RobotContainer {
@@ -51,9 +52,11 @@ public class RobotContainer {
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
     public final CommandCoralPivot coralPivot = new CommandCoralPivot();
     public final CommandElevator elevator = new CommandElevator();
+    public final CommandHang hang = new CommandHang();
 
     public RobotContainer() {
         configureBindings();
+        
     }
 
     private void configureBindings() {
@@ -67,6 +70,9 @@ public class RobotContainer {
                     .withRotationalRate(-Driver.getRightX() * MaxAngularRate * speedMultiplier) // Drive counterclockwise with negative X (left)
             )
         );
+
+        elevator.setDefaultCommand(elevator.setGravity());
+        coralPivot.setDefaultCommand(coralPivot.setBrake());
 
         // Toggle speed mode when the square button is pressed
         Driver.square().onTrue(new InstantCommand(() -> {
@@ -92,9 +98,17 @@ public class RobotContainer {
         operator.povRight().onTrue(coralPivot.setT3Command());
         operator.povDown().onTrue(coralPivot.setLoadCommand());
 
+        operator.rightTrigger().whileTrue(hang.Up());
+        operator.leftTrigger().whileTrue(hang.Down());
+        operator.rightTrigger().onFalse(hang.Stop());
+        operator.leftTrigger().onFalse(hang.Stop());
+
         /* Scoring macros */
-        operator.a().onTrue(Commands.parallel(coralPivot.setLoadCommand(), elevator.setLoadingPosition()).andThen(elevator.setStowPosition()));
-        
+        operator.y().onTrue(Commands.parallel(coralPivot.setStowCommand(), elevator.setStowPosition()));
+        operator.a().onTrue(Commands.parallel(coralPivot.setLoadCommand(), elevator.setLoadingPosition()));
+        operator.b().onTrue(Commands.parallel(coralPivot.setT2Command(), elevator.setT2Position()));
+        operator.x().onTrue(Commands.sequence(elevator.setStabPosition(), elevator.setLoadingPosition()));
+
         drivetrain.registerTelemetry(logger::telemeterize);
     }
 

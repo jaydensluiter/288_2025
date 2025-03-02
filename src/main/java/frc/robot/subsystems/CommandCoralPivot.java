@@ -14,7 +14,7 @@ public class CommandCoralPivot implements Subsystem{
     public PIDController pivotPID = new PIDController(8, 0, 0.1); // PID controller for the pivot motor
 
     private double kPrimeT4 = 0; // Setpoint for the pivot motor
-    private double kPrimet3 = .15; // Setpoint for the pivot motor
+    private double kPrimeT3 = .15; // Setpoint for the pivot motor
     private double kPrimeT2 = .15; // Setpoint for the pivot motor
     private double kPrimeLoad = .51; // Setpoint for the pivot motor
     private double kStow = 0; // Setpoint for the pivot motor
@@ -25,27 +25,49 @@ public class CommandCoralPivot implements Subsystem{
         PivotMotor.setPosition(0);
         pivotPID.reset();
     }
-    
-    /* Set point commands */
 
-    public Command setT4Command(){
+    public Command setBrake(){
         return run(
             () -> {
-                PivotMotor.set(MathUtil.clamp(pivotPID.calculate(PivotMotor.getPosition().getValueAsDouble(), kPrimeT4), -.9, .9)); // Set the pivot motor to the calculated PID value
+                PivotMotor.set(0); // Set the pivot motor to the calculated PID value
             });
     }
 
-    public Command setT3Command(){
+    /* Set point commands */
+
+    public Command setStowCommand(){
         return run(
             () -> {
-                PivotMotor.set(MathUtil.clamp(pivotPID.calculate(PivotMotor.getPosition().getValueAsDouble(), kPrimet3), -.9, .9)); // Set the pivot motor to the calculated PID value
-            });
+                PivotMotor.set(MathUtil.clamp(pivotPID.calculate(PivotMotor.getPosition().getValueAsDouble(), kStow), -.9, .9)); // Set the pivot motor to the calculated PID value
+            }).until(() -> pivotPID.atSetpoint());
     }
 
     public Command setLoadCommand(){
         return run(
             () -> {
-                PivotMotor.set(MathUtil.clamp(pivotPID.calculate(PivotMotor.getPosition().getValueAsDouble(), kPrimeLoad), -.9, .9)); // Set the pivot motor to the calculated PID value
-            });
+                PivotMotor.set(MathUtil.clamp(pivotPID.calculate(PivotMotor.getPosition().getValueAsDouble(), kPrimeLoad), -.5, .5)); // Set the pivot motor to the calculated PID value
+            }).until(() -> pivotPID.atSetpoint());
     }
+
+    public Command setT4Command(){
+        return run(
+            () -> {
+                PivotMotor.set(MathUtil.clamp(pivotPID.calculate(PivotMotor.getPosition().getValueAsDouble(), kPrimeT4), -.9, .9)); // Set the pivot motor to the calculated PID value
+            }).until(() -> pivotPID.atSetpoint());
+    }
+
+    public Command setT3Command(){
+        return run(
+            () -> {
+                PivotMotor.set(MathUtil.clamp(pivotPID.calculate(PivotMotor.getPosition().getValueAsDouble(), kPrimeT3), -.9, .9)); // Set the pivot motor to the calculated PID value
+            }).until(() -> pivotPID.atSetpoint());
+    }
+
+    public Command setT2Command(){
+        return run(
+            () -> {
+                PivotMotor.set(MathUtil.clamp(pivotPID.calculate(PivotMotor.getPosition().getValueAsDouble(), kPrimeT2), -.9, .9)); // Set the pivot motor to the calculated PID value
+            }).until(() -> pivotPID.atSetpoint());
+    }
+
 }
