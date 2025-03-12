@@ -1,0 +1,54 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 1.5464139344262293,
+        "y": 0.7523565573770474
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 1.7450701236431827,
+        "y": 0.9041317809341157
+      },
+      "isLocked": false,
+      "linkedName": "At reef"
+    },
+    {
+      "anchor": {
+        "x": 5.010860655737704,
+        "y": 2.8022540983606565
+      },
+      "prevControl": {
+        "x": 4.723155737704918,
+        "y": 2.1788934426229516
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "2nd Reef"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 3.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 120.57922687248904
+  },
+  "reversed": false,
+  "folder": "basic 2 coral",
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": 53.642802580004584
+  },
+  "useDefaultConstraints": true
+}

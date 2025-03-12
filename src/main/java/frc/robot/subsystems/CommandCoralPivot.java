@@ -70,4 +70,10 @@ public class CommandCoralPivot implements Subsystem{
             }).until(() -> pivotPID.atSetpoint());
     }
 
+    public Command setPosition(double Position){
+        return run(
+            () -> {
+                PivotMotor.set(MathUtil.clamp(pivotPID.calculate(PivotMotor.getPosition().getValueAsDouble(), Position), -.9, .9)); // Set the pivot motor to the calculated PID value
+            }).until(() -> pivotPID.atSetpoint());
+    }
 }

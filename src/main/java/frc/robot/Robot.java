@@ -4,30 +4,17 @@
 
 package frc.robot;
 
-import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.ctre.phoenix6.controls.StaticBrake;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.revrobotics.spark.SparkMax;
 
-import edu.wpi.first.wpilibj.Encoder;
-import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-
-import frc.robot.subsystems.CommandCoralPivot;
-import frc.robot.subsystems.CommandElevator;
 
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
 
   private final RobotContainer m_robotContainer;
-
-  private final CommandPS4Controller Driver = new CommandPS4Controller(0);
-  private final CommandXboxController operator = new CommandXboxController(1);
 
   private final TalonFX pivot = new TalonFX(13);
   
@@ -78,8 +65,8 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopPeriodic() {
-
     SmartDashboard.putString("Pivot Position", String.valueOf(pivot.getPosition().getValueAsDouble()));
+    SmartDashboard.putString("Elevator Position", String.valueOf(m_robotContainer.elevator.getElevatorPosition()));
   }
 
   @Override

@@ -8,15 +8,19 @@ import static edu.wpi.first.units.Units.*;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.pathplanner.lib.auto.AutoBuilder;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-
+import frc.robot.Constants.ElevatorConstants;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandCoralPivot;
 import frc.robot.subsystems.CommandElevator;
@@ -24,6 +28,8 @@ import frc.robot.subsystems.CommandHang;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 
 public class RobotContainer {
+
+    private final SendableChooser<Command> autoChooser;
 
     // Flag to track the current speed mode
     private boolean isSlowSpeed = false;
@@ -57,6 +63,19 @@ public class RobotContainer {
     public RobotContainer() {
         configureBindings();
         
+        // For convenience a programmer could change this when going to competition.
+        boolean isCompetition = true;
+
+        // Build an auto chooser. This will use Commands.none() as the default option.
+        // As an example, this will only show autos that start with "comp" while at
+        // competition as defined by the programmer
+        autoChooser = AutoBuilder.buildAutoChooserWithOptionsModifier(
+        (stream) -> isCompetition
+            ? stream.filter(auto -> auto.getName().startsWith("comp"))
+            : stream
+        );
+
+        SmartDashboard.putData("Auto Chooser", autoChooser);
     }
 
     private void configureBindings() {
@@ -113,6 +132,20 @@ public class RobotContainer {
     }
 
     public Command getAutonomousCommand() {
-        return Commands.print("No autonomous command configured");
+        return autoChooser.getSelected();
+    }
+
+    private Command moveManipulator(double elevatorPosition, double armPosition) {
+        return Commands.either(
+            Commands.sequence(
+                elevator.setPosition(elevatorPosition),
+                coralPivot.setPosition(armPosition)
+            ),
+            Commands.parallel(
+                elevator.setPosition(elevatorPosition),
+                coralPivot.setPosition(armPosition)
+            ),
+            () -> elevator.isSafe()
+        );
     }
 }
