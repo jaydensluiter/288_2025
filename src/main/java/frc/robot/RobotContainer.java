@@ -40,7 +40,7 @@ public class RobotContainer {
     private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
 
     // Define the slow speed multiplier
-    private static final double slowSpeed = 0.5; // Adjust this value as needed
+    private static double slowSpeed; // Adjust this value as needed
 
     /* Setting up bindings for necessary control of the swerve drive platform */
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
@@ -84,19 +84,17 @@ public class RobotContainer {
         drivetrain.setDefaultCommand(
             // Drivetrain will execute this command periodically
             drivetrain.applyRequest(() -> 
-                drive.withVelocityX(-Driver.getLeftY() * MaxSpeed * speedMultiplier) // Drive forward with negative Y (forward)
-                    .withVelocityY(-Driver.getLeftX() * MaxSpeed * speedMultiplier) // Drive left with negative X (left)
-                    .withRotationalRate(-Driver.getRightX() * MaxAngularRate * speedMultiplier) // Drive counterclockwise with negative X (left)
+                drive.withVelocityX(-Driver.getLeftY() * MaxSpeed * slowSpeed) // Drive forward with negative Y (forward)
+                    .withVelocityY(-Driver.getLeftX() * MaxSpeed * slowSpeed) // Drive left with negative X (left)
+                    .withRotationalRate(-Driver.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
             )
         );
 
         elevator.setDefaultCommand(elevator.setGravity());
         coralPivot.setDefaultCommand(coralPivot.setBrake());
 
-        // Toggle speed mode when the square button is pressed
-        Driver.square().onTrue(new InstantCommand(() -> {
-            isSlowSpeed = !isSlowSpeed; // Toggle the speed mode
-        }));
+        Driver.R2().onTrue(new InstantCommand(() -> slowSpeed = .25));
+        Driver.R2().onFalse(new InstantCommand(() -> slowSpeed = 1));
 
         // joystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
         Driver.circle().whileTrue(drivetrain.applyRequest(() ->
