@@ -17,14 +17,10 @@ public class CommandElevator implements Subsystem {
     private final Encoder elevatorEncoder = new Encoder(0, 1, true, Encoder.EncodingType.k2X); // Encoder for the elevator
 
     private final PIDController elevatorPID = new PIDController(
-        400, //kp
-        0, //ki
-        175 //kd
+        ElevatorConstants.kElevatorP, //kp
+        ElevatorConstants.kElevatorI, //ki
+        ElevatorConstants.kElevatorD //kd
     ); // PID controller for the elevator motor
-
-    private static final double SPOOL_DIAMETER_INCHES = 1.5;
-    private static final double SPOOL_CIRCUMFERENCE = Math.PI * SPOOL_DIAMETER_INCHES;
-    private static final double INCHES_PER_ROTATION = SPOOL_CIRCUMFERENCE;
 
     /* Subsystem init */
     public CommandElevator() {
@@ -50,50 +46,6 @@ public class CommandElevator implements Subsystem {
     }
 
     /* Set point commands */
-    public Command setStowPosition() {
-        return run(() -> {
-            elevator.set(MathUtil.clamp(elevatorPID.calculate(elevatorEncoder.getDistance(), ElevatorConstants.kStowPosition), -0.9, 0.9));
-        }).until(() -> elevatorPID.atSetpoint());
-    }
-
-    public Command setLoadingPosition() {
-        return run(() -> {
-            elevator.set(MathUtil.clamp(elevatorPID.calculate(elevatorEncoder.getDistance(), ElevatorConstants.kLoadingPosition), -0.9, 0.9));
-            SmartDashboard.putString("Elevator Position", String.valueOf(elevatorEncoder.getDistance()));
-        }).until(() -> elevatorPID.atSetpoint());
-    }
-
-    public Command setStabPosition() {
-        return run(() -> {
-            elevator.set(MathUtil.clamp(elevatorPID.calculate(elevatorEncoder.getDistance(), ElevatorConstants.kStabPosition), -0.9, 0.9));
-            SmartDashboard.putString("Elevator Position", String.valueOf(elevatorEncoder.getDistance()));
-        }).until(() -> elevatorPID.atSetpoint());
-    }
-
-    public Command setT2Position() {
-        return run(() -> {
-            elevator.set(MathUtil.clamp(elevatorPID.calculate(elevatorEncoder.getDistance(), ElevatorConstants.kT2Position), -0.9, 0.9));
-            SmartDashboard.putString("Elevator Position", String.valueOf(elevatorEncoder.getDistance()));
-        }).until(() -> elevatorPID.atSetpoint());
-    }
-
-    public Command setT3Position() {
-        return run(() -> {
-            elevator.set(MathUtil.clamp(elevatorPID.calculate(elevatorEncoder.getDistance(), ElevatorConstants.kT3Position), -0.9, 0.9));
-        }).until(() -> elevatorPID.atSetpoint());
-    }
-
-    public Command setT4Position() {
-        return run(() -> {
-            elevator.set(MathUtil.clamp(elevatorPID.calculate(elevatorEncoder.getDistance(), ElevatorConstants.kT4Position), -0.9, 0.9));
-        }).until(() -> elevatorPID.atSetpoint());
-    }
-
-    public Command setT4ScorePosition() {
-        return run(() -> {
-            elevator.set(MathUtil.clamp(elevatorPID.calculate(elevatorEncoder.getDistance(), ElevatorConstants.kT3Position), -0.9, 0.9));
-        }).until(() -> elevatorPID.atSetpoint());
-    }
 
     public Command setPosition(double position) {
         return run(() -> {

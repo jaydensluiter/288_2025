@@ -7,19 +7,21 @@ package frc.robot;
 import static edu.wpi.first.units.Units.*;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
+import com.ctre.phoenix6.signals.ControlModeValue;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.PS4Controller.Axis;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import frc.robot.Constants.CoralPivotConstants;
 import frc.robot.Constants.ElevatorConstants;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandCoralPivot;
@@ -40,7 +42,7 @@ public class RobotContainer {
     private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
 
     // Define the slow speed multiplier
-    private static double slowSpeed; // Adjust this value as needed
+    private static double slowSpeed = 1; // Adjust this value as needed
 
     /* Setting up bindings for necessary control of the swerve drive platform */
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
@@ -53,7 +55,7 @@ public class RobotContainer {
 
     // Define the button to toggle speed mode
     private final CommandPS4Controller Driver = new CommandPS4Controller(0);
-    private final CommandXboxController operator = new CommandXboxController(1);
+    private final CommandPS4Controller operator = new CommandPS4Controller(1);
 
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
     public final CommandCoralPivot coralPivot = new CommandCoralPivot();
@@ -69,13 +71,14 @@ public class RobotContainer {
         // Build an auto chooser. This will use Commands.none() as the default option.
         // As an example, this will only show autos that start with "comp" while at
         // competition as defined by the programmer
-        autoChooser = AutoBuilder.buildAutoChooserWithOptionsModifier(
+        autoChooser = null;
+        /*autoChooser = AutoBuilder.buildAutoChooserWithOptionsModifier(
         (stream) -> isCompetition
             ? stream.filter(auto -> auto.getName().startsWith("comp"))
             : stream
         );
 
-        SmartDashboard.putData("Auto Chooser", autoChooser);
+        SmartDashboard.putData("Auto Chooser", autoChooser);*/
     }
 
     private void configureBindings() {
@@ -111,20 +114,29 @@ public class RobotContainer {
         // reset the field-centric heading on left bumper press
         Driver.R1().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
-        operator.povUp().onTrue(coralPivot.setT4Command());
-        operator.povRight().onTrue(coralPivot.setT3Command());
-        operator.povDown().onTrue(coralPivot.setLoadCommand());
-
-        operator.rightTrigger().whileTrue(hang.Up());
-        operator.leftTrigger().whileTrue(hang.Down());
-        operator.rightTrigger().onFalse(hang.Stop());
-        operator.leftTrigger().onFalse(hang.Stop());
+        operator.R1().whileTrue(hang.Up());
+        operator.L1().whileTrue(hang.Down());
+        operator.R1().onFalse(hang.Stop());
+        operator.L1().onFalse(hang.Stop());
 
         /* Scoring macros */
-        operator.y().onTrue(Commands.parallel(coralPivot.setStowCommand(), elevator.setStowPosition()));
-        operator.a().onTrue(Commands.parallel(coralPivot.setLoadCommand(), elevator.setLoadingPosition()));
-        operator.b().onTrue(Commands.parallel(coralPivot.setT2Command(), elevator.setT2Position()));
-        operator.x().onTrue(Commands.sequence(elevator.setStabPosition(), elevator.setLoadingPosition()));
+        // operator.cross().onTrue(Commands.parallel(coralPivot.setPosition(CoralPivotConstants.kStow), elevator.setPosition(ElevatorConstants.kStowPosition)));
+        operator.square().onTrue(Commands.sequence(elevator.setPosition(ElevatorConstants.kStabPosition), elevator.setPosition(ElevatorConstants.kLoadingPosition)));
+
+        operator.povUp().onTrue(Commands.parallel(elevator.setPosition(ElevatorConstants.kT4Position)));
+        operator.povDown().onTrue(Commands.parallel(elevator.setPosition(ElevatorConstants.kStowPosition)));
+        operator.povLeft().onTrue(Commands.parallel(elevator.setPosition(ElevatorConstants.kT3Position)));
+        operator.povRight().onTrue(Commands.parallel(elevator.setPosition(ElevatorConstants.kLoadingPosition)));
+
+        operator.triangle().whileTrue(elevator.setPosition(elevator.getElevatorPosition() + .25));
+        operator.cross().whileTrue(elevator.setPosition(elevator.getElevatorPosition() - .25));
+
+        operator.L2().whileTrue(Commands.run(() -> coralPivot.PivotMotor.set(0.45)));
+        operator.L2().onFalse(Commands.run(() -> coralPivot.PivotMotor.set(0.0)));
+        operator.R2().whileTrue(Commands.run(() -> coralPivot.PivotMotor.set(-0.45)));
+        operator.R2().onFalse(Commands.run(() -> coralPivot.PivotMotor.set(0.0)));
+
+        // operator.circle().whileTrue(Commands.run(() -> elevator.))
 
         drivetrain.registerTelemetry(logger::telemeterize);
     }
