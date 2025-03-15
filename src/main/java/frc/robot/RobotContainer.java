@@ -93,7 +93,7 @@ public class RobotContainer {
             )
         );
 
-        elevator.setDefaultCommand(elevator.setGravity());
+        elevator.setDefaultCommand(elevator.setDefault());
         coralPivot.setDefaultCommand(coralPivot.setBrake());
 
         Driver.R2().onTrue(new InstantCommand(() -> slowSpeed = .25));
@@ -120,23 +120,19 @@ public class RobotContainer {
         operator.L1().onFalse(hang.Stop());
 
         /* Scoring macros */
-        // operator.cross().onTrue(Commands.parallel(coralPivot.setPosition(CoralPivotConstants.kStow), elevator.setPosition(ElevatorConstants.kStowPosition)));
         operator.square().onTrue(Commands.sequence(elevator.setPosition(ElevatorConstants.kStabPosition), elevator.setPosition(ElevatorConstants.kLoadingPosition)));
+        operator.triangle().whileTrue(elevator.setPosition(elevator.getElevatorPosition() + .25));
+        operator.cross().whileTrue(elevator.setPosition(elevator.getElevatorPosition() - .25));
 
         operator.povUp().onTrue(Commands.parallel(elevator.setPosition(ElevatorConstants.kT4Position)));
         operator.povDown().onTrue(Commands.parallel(elevator.setPosition(ElevatorConstants.kStowPosition)));
         operator.povLeft().onTrue(Commands.parallel(elevator.setPosition(ElevatorConstants.kT3Position)));
         operator.povRight().onTrue(Commands.parallel(elevator.setPosition(ElevatorConstants.kLoadingPosition)));
 
-        operator.triangle().whileTrue(elevator.setPosition(elevator.getElevatorPosition() + .25));
-        operator.cross().whileTrue(elevator.setPosition(elevator.getElevatorPosition() - .25));
+        operator.L2().whileTrue(Commands.run(() -> coralPivot.setPosition(coralPivot.getPosition() + 0.05)));
+        operator.R2().whileTrue(Commands.run(() -> coralPivot.setPosition(coralPivot.getPosition() - 0.05)));
 
-        operator.L2().whileTrue(Commands.run(() -> coralPivot.PivotMotor.set(0.45)));
-        operator.L2().onFalse(Commands.run(() -> coralPivot.PivotMotor.set(0.0)));
-        operator.R2().whileTrue(Commands.run(() -> coralPivot.PivotMotor.set(-0.45)));
-        operator.R2().onFalse(Commands.run(() -> coralPivot.PivotMotor.set(0.0)));
-
-        // operator.circle().whileTrue(Commands.run(() -> elevator.))
+        operator.circle().whileTrue(Commands.run(() -> elevator.resetElevatorEncoder()));
 
         drivetrain.registerTelemetry(logger::telemeterize);
     }

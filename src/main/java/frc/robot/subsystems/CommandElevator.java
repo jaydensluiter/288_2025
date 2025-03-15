@@ -8,13 +8,19 @@ import frc.robot.Constants.ElevatorConstants;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.Encoder;
+import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 
+import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
+
 public class CommandElevator implements Subsystem {
     private final SparkMax elevator = new SparkMax(14, MotorType.kBrushless);
     private final Encoder elevatorEncoder = new Encoder(0, 1, true, Encoder.EncodingType.k2X); // Encoder for the elevator
+    private double manualSpeed = 0;
+    private static final double deadzone = .1;
+
 
     private final PIDController elevatorPID = new PIDController(
         ElevatorConstants.kElevatorP, //kp
@@ -29,6 +35,20 @@ public class CommandElevator implements Subsystem {
         elevatorPID.reset();
     }
 
+    public void resetElevatorEncoder() {
+        elevatorEncoder.reset();
+    }
+
+    // // MANUAL CONTROL ELEVATOR
+    // public Command manualControl(CommandPS4Controller controller) {
+    //     return run(() -> {
+    //         double joystickValue = -controller.getRawAxis(1);
+    //         if (Math.abs(joystickValue) < deadzone) joystickValue = 0;
+    //         manualSpeed = joystickValue;
+    //     });
+    // }
+
+    
     public boolean isSafe() { //detect weather or not the elevator is above the safe position
         boolean isAboveSafePosition = elevatorEncoder.getDistance() > ElevatorConstants.kSafePosition;
         SmartDashboard.putBoolean("Elevator Above Safe Position", isAboveSafePosition);
@@ -39,9 +59,11 @@ public class CommandElevator implements Subsystem {
         return elevatorEncoder.getDistance();
     }
 
-    public Command setGravity() {
+    public Command setDefault() {
         return run(() -> {
             elevator.set(.025);
+            // MANUAL CONTROL ELEVATOR
+            // elevator.manualControl(controller);
         });
     }
 

@@ -8,9 +8,8 @@ import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.math.controller.PIDController;
 
 public class CommandCoralPivot implements Subsystem{
-    public final TalonFX PivotMotor = new TalonFX(13); // Coral arm pivot motor
-
-    public PIDController pivotPID = new PIDController(8, 0, 0.1); // PID controller for the pivot motor
+    private final TalonFX PivotMotor = new TalonFX(13); // Coral arm pivot motor
+    private PIDController pivotPID = new PIDController(8, 0, 0.1); // PID controller for the pivot motor
 
     /* Subsystem init */
     public CommandCoralPivot() {
@@ -24,6 +23,10 @@ public class CommandCoralPivot implements Subsystem{
             () -> {
                 PivotMotor.set(0); // Set the pivot motor to the calculated PID value
             });
+    }
+
+    public Double getPosition() {
+        return PivotMotor.getPosition().getValueAsDouble();
     }
 
     /* Set point commands */
