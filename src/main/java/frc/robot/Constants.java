@@ -55,4 +55,8 @@ public final class Constants {
         public static final double INTAKE_SPEED = .35;
         public static final double OUTTAKE_SPEED = .8;
     }
+
+    public static final class Swerve {
+        public static final double MAX_SPEED = 3.7;
+    }
 }
