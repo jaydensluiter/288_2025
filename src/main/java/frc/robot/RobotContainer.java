@@ -21,13 +21,12 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import frc.robot.Constants.CoralPivotConstants;
-import frc.robot.Constants.ElevatorConstants;
 import frc.robot.generated.TunerConstants;
-import frc.robot.subsystems.CommandCoralPivot;
-import frc.robot.subsystems.CommandElevator;
-import frc.robot.subsystems.CommandHang;
+import frc.robot.subsystems.CoralPivot;
+import frc.robot.subsystems.Hang;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.Elevator;
+import frc.robot.subsystems.Algae;
 
 public class RobotContainer {
 
@@ -57,13 +56,14 @@ public class RobotContainer {
     private final CommandPS4Controller Driver = new CommandPS4Controller(0);
     private final CommandPS4Controller operator = new CommandPS4Controller(1);
 
-    public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
-    public final CommandCoralPivot coralPivot = new CommandCoralPivot();
-    public final CommandElevator elevator = new CommandElevator();
-    public final CommandHang hang = new CommandHang();
+    private final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
+    private final CoralPivot coralPivot = new CoralPivot();
+    private final Elevator elevator = new Elevator();
+    private final Hang hang = new Hang();
+    private final Algae algae = new Algae();
 
     public RobotContainer() {
-        configureBindings();
+        // configureBindings();
         
         // For convenience a programmer could change this when going to competition.
         boolean isCompetition = true;
@@ -81,77 +81,79 @@ public class RobotContainer {
         SmartDashboard.putData("Auto Chooser", autoChooser);*/
     }
 
-    private void configureBindings() {
-        // Note that X is defined as forward according to WPILib convention,
-        // and Y is defined as to the left according to WPILib convention.
-        drivetrain.setDefaultCommand(
-            // Drivetrain will execute this command periodically
-            drivetrain.applyRequest(() -> 
-                drive.withVelocityX(-Driver.getLeftY() * MaxSpeed * slowSpeed) // Drive forward with negative Y (forward)
-                    .withVelocityY(-Driver.getLeftX() * MaxSpeed * slowSpeed) // Drive left with negative X (left)
-                    .withRotationalRate(-Driver.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
-            )
-        );
+    // private void configureBindings() {
+    //     // Note that X is defined as forward according to WPILib convention,
+    //     // and Y is defined as to the left according to WPILib convention.
+    //     drivetrain.setDefaultCommand(
+    //         // Drivetrain will execute this command periodically
+    //         drivetrain.applyRequest(() -> 
+    //             drive.withVelocityX(-Driver.getLeftY() * MaxSpeed * slowSpeed) // Drive forward with negative Y (forward)
+    //                 .withVelocityY(-Driver.getLeftX() * MaxSpeed * slowSpeed) // Drive left with negative X (left)
+    //                 .withRotationalRate(-Driver.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
+    //         )
+    //     );
 
-        elevator.setDefaultCommand(elevator.setDefault());
-        coralPivot.setDefaultCommand(coralPivot.setBrake());
+    //     elevator.setDefaultCommand(elevator.setDefault());
+    //     coralPivot.setDefaultCommand(coralPivot.setBrake());
 
-        Driver.R2().onTrue(new InstantCommand(() -> slowSpeed = .25));
-        Driver.R2().onFalse(new InstantCommand(() -> slowSpeed = 1));
+    //     Driver.R2().onTrue(new InstantCommand(() -> slowSpeed = .25));
+    //     Driver.R2().onFalse(new InstantCommand(() -> slowSpeed = 1));
 
-        // joystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
-        Driver.circle().whileTrue(drivetrain.applyRequest(() ->
-            point.withModuleDirection(new Rotation2d(-Driver.getLeftY(), -Driver.getLeftX()))
-        ));
+    //     // joystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
+    //     Driver.circle().whileTrue(drivetrain.applyRequest(() ->
+    //         point.withModuleDirection(new Rotation2d(-Driver.getLeftY(), -Driver.getLeftX()))
+    //     ));
 
-        // Run SysId routines when holding back/start and X/Y.
-        // Note that each routine should be run exactly once in a single log.
-        Driver.share().and(Driver.triangle()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
-        Driver.share().and(Driver.square()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
-        Driver.options().and(Driver.triangle()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
-        Driver.options().and(Driver.square()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
+    //     // Run SysId routines when holding back/start and X/Y.
+    //     // Note that each routine should be run exactly once in a single log.
+    //     Driver.share().and(Driver.triangle()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
+    //     Driver.share().and(Driver.square()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
+    //     Driver.options().and(Driver.triangle()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
+    //     Driver.options().and(Driver.square()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
-        // reset the field-centric heading on left bumper press
-        Driver.R1().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
+    //     // reset the field-centric heading on left bumper press
+    //     Driver.R1().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
-        operator.R1().whileTrue(hang.Up());
-        operator.L1().whileTrue(hang.Down());
-        operator.R1().onFalse(hang.Stop());
-        operator.L1().onFalse(hang.Stop());
+    //     operator.R1().whileTrue(hang.Up());
+    //     operator.L1().whileTrue(hang.Down());
+    //     operator.R1().onFalse(hang.Stop());
+    //     operator.L1().onFalse(hang.Stop());
 
-        /* Scoring macros */
-        operator.square().onTrue(Commands.sequence(elevator.setPosition(ElevatorConstants.kStabPosition), elevator.setPosition(ElevatorConstants.kLoadingPosition)));
-        operator.triangle().whileTrue(elevator.setPosition(elevator.getElevatorPosition() + .25));
-        operator.cross().whileTrue(elevator.setPosition(elevator.getElevatorPosition() - .25));
+    //     /* Scoring macros */
+    //     operator.square().onTrue(Commands.sequence(elevator.setPosition(ElevatorConstants.kStabPosition), elevator.setPosition(ElevatorConstants.kLoadingPosition)));
+    //     operator.triangle().whileTrue(elevator.setPosition(elevator.getElevatorPosition() + .25));
+    //     operator.cross().whileTrue(elevator.setPosition(elevator.getElevatorPosition() - .25));
 
-        operator.povUp().onTrue(Commands.parallel(elevator.setPosition(ElevatorConstants.kT4Position)));
-        operator.povDown().onTrue(Commands.parallel(elevator.setPosition(ElevatorConstants.kStowPosition)));
-        operator.povLeft().onTrue(Commands.parallel(elevator.setPosition(ElevatorConstants.kT3Position)));
-        operator.povRight().onTrue(Commands.parallel(elevator.setPosition(ElevatorConstants.kLoadingPosition)));
+    //     operator.povUp().onTrue(Commands.parallel(elevator.setPosition(ElevatorConstants.kT4Position)));
+    //     operator.povDown().onTrue(Commands.parallel(elevator.setPosition(ElevatorConstants.kStowPosition)));
+    //     operator.povLeft().onTrue(Commands.parallel(elevator.setPosition(ElevatorConstants.kT3Position)));
+    //     operator.povRight().onTrue(Commands.parallel(elevator.setPosition(ElevatorConstants.kLoadingPosition)));
 
-        operator.L2().whileTrue(Commands.run(() -> coralPivot.setPosition(coralPivot.getPosition() + 0.05)));
-        operator.R2().whileTrue(Commands.run(() -> coralPivot.setPosition(coralPivot.getPosition() - 0.05)));
+    //     operator.L2().whileTrue(Commands.run(() -> coralPivot.setPosition(coralPivot.getPosition() + 0.05)));
+    //     operator.R2().whileTrue(Commands.run(() -> coralPivot.setPosition(coralPivot.getPosition() - 0.05)));
 
-        operator.circle().whileTrue(Commands.run(() -> elevator.resetElevatorEncoder()));
+    //     operator.circle().whileTrue(Commands.run(() -> elevator.resetElevatorEncoder()));
 
-        drivetrain.registerTelemetry(logger::telemeterize);
-    }
+        // drivetrain.registerTelemetry(logger::telemeterize);
+    // }
 
     public Command getAutonomousCommand() {
         return autoChooser.getSelected();
     }
 
-    private Command moveManipulator(double elevatorPosition, double armPosition) {
-        return Commands.either(
-            Commands.sequence(
-                elevator.setPosition(elevatorPosition),
-                coralPivot.setPosition(armPosition)
-            ),
-            Commands.parallel(
-                elevator.setPosition(elevatorPosition),
-                coralPivot.setPosition(armPosition)
-            ),
-            () -> elevator.isSafe()
-        );
+    public Elevator getElevator() {
+        return elevator;
+    }
+
+    public Hang getHang() {
+        return hang;
+    }
+
+    public CoralPivot getCoralPivot() {
+        return coralPivot;
+    }
+
+    public Algae getAlgae() {
+        return algae;
     }
 }
