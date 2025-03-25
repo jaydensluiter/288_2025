@@ -13,7 +13,7 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.units.measure.*;
-import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.SwerveDrive;
 
 import frc.robot.Constants;
 
@@ -25,14 +25,14 @@ public class TunerConstants {
     // The steer motor uses any SwerveModule.SteerRequestType control request with the
     // output type specified by SwerveModuleConstants.SteerMotorClosedLoopOutput
     private static final Slot0Configs steerGains = new Slot0Configs()
-        .withKP(100).withKI(0).withKD(0.5)
-        .withKS(0.1).withKV(2.33).withKA(0)
+        .withKP(Constants.Swerve.kSteerP).withKI(Constants.Swerve.kSteerI).withKD(Constants.Swerve.kSteerD)
+        .withKS(Constants.Swerve.kSteerS).withKV(Constants.Swerve.kSteerV).withKA(Constants.Swerve.kSteerA)
         .withStaticFeedforwardSign(StaticFeedforwardSignValue.UseClosedLoopSign);
     // When using closed-loop control, the drive motor uses the control
     // output type specified by SwerveModuleConstants.DriveMotorClosedLoopOutput
     private static final Slot0Configs driveGains = new Slot0Configs()
-        .withKP(0.1).withKI(0).withKD(0)
-        .withKS(0).withKV(0.124);
+        .withKP(Constants.Swerve.kDriveP).withKI(Constants.Swerve.kDriveI).withKD(Constants.Swerve.kDriveD)
+        .withKS(Constants.Swerve.kDriveS).withKV(Constants.Swerve.kDriveV);
 
     // The closed-loop output type to use for the steer motors;
     // This affects the PID/FF gains for the steer motors
@@ -75,7 +75,7 @@ public class TunerConstants {
 
     // Theoretical free speed (m/s) at 12 V applied output;
     // This needs to be tuned to your individual robot
-    public static final LinearVelocity kSpeedAt12Volts = MetersPerSecond.of(Constants.Swerve.MAX_VELOCITY);
+    public static final LinearVelocity kSpeedAt12Volts = MetersPerSecond.of(Constants.Swerve.MAX_SPEED);
 
     // Every 1 rotation of the azimuth results in kCoupleRatio drive motor turns;
     // This may need to be tuned to your individual robot
@@ -196,8 +196,8 @@ public class TunerConstants {
      * Creates a CommandSwerveDrivetrain instance.
      * This should only be called once in your robot program,.
      */
-    public static CommandSwerveDrivetrain createDrivetrain() {
-        return new CommandSwerveDrivetrain(
+    public static SwerveDrive createDrivetrain() {
+        return new SwerveDrive(
             DrivetrainConstants, FrontLeft, FrontRight, BackLeft, BackRight
         );
     }

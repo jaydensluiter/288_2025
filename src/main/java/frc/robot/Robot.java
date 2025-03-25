@@ -5,19 +5,23 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.Timer;
 // import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.subsystems.Autons;
 
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
 
-  private final RobotContainer m_robotContainer;
+  private final RobotContainer robotContainer;
+  private final Timer timer;
+  private final Autons autons;
 
   public Robot() {
-    m_robotContainer = new RobotContainer();
-
-    
+    robotContainer = new RobotContainer();
+    timer = new Timer();
+    autons = robotContainer.getAutons();
   }
 
   @Override
@@ -37,7 +41,8 @@ public class Robot extends TimedRobot {
 
   @Override
   public void autonomousInit() {
-    m_autonomousCommand = m_robotContainer.getAutonomousCommand();
+    m_autonomousCommand = robotContainer.getAutonomousCommand();
+    timer.start();
 
     if (m_autonomousCommand != null) {
       m_autonomousCommand.schedule();
@@ -45,7 +50,19 @@ public class Robot extends TimedRobot {
   }
 
   @Override
-  public void autonomousPeriodic() {}
+  public void autonomousPeriodic() {
+    if(timer.get() > 0 && timer.get() < .2) {
+        autons.coralPivotAuton();
+      }
+  
+      else if(timer.get() >= .2 && timer.get() < 1) {
+        autons.coralPivotAutonStop();
+      }
+  
+      else {
+        autons.coralPivotAutonStop();
+      }
+  }
 
   @Override
   public void autonomousExit() {}

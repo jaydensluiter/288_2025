@@ -16,12 +16,16 @@ public class Algae extends SubsystemBase{
         algaeIntake = new TalonFX(Constants.Algae.INTAKE_PORT);
     }
 
-    public void moveWristUp(){
+    public void moveWristUp() {
         algaeWrist.set(Constants.Algae.WRIST_SPEED);
     }
 
-    public void moveWristDown(){
+    public void moveWristDown() {
         algaeWrist.set(-Constants.Algae.WRIST_SPEED);
+    }
+
+    public void stopWrist() {
+        algaeWrist.set(0);
     }
 
     public void intake() {
@@ -30,5 +34,9 @@ public class Algae extends SubsystemBase{
 
     public void outtake() {
         algaeIntake.set(Constants.Algae.OUTTAKE_SPEED);
+    }
+
+    public void stopIntake() {
+        algaeIntake.set(0);
     }
 }

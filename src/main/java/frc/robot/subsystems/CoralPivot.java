@@ -12,17 +12,10 @@ import frc.robot.Constants;
 
 public class CoralPivot extends SubsystemBase {
     private final TalonFX pivotMotor;
-    // private final PIDController pivotPID;
 
     /* Subsystem init */
     public CoralPivot() {
-        // pivotPID.setTolerance(.01); // Set the tolerance for the PID controller
         pivotMotor = new TalonFX(Constants.CoralPivot.PIVOT_PORT);
-        // pivotPID = new PIDController(
-        //     Constants.CoralPivot.kP,
-        //     Constants.CoralPivot.kI,
-        //     Constants.CoralPivot.kD
-        // );
 
     }
 
@@ -30,12 +23,19 @@ public class CoralPivot extends SubsystemBase {
         return pivotMotor.getPosition().getValueAsDouble();
     }
 
-    /* Set point commands */
+    public void moveUp() {
+        pivotMotor.set(-Constants.CoralPivot.PIVOT_SPEED);
+    }
 
-    // public Command setPosition(double Position){
-    //     return run(
-    //         () -> {
-    //             PivotMotor.set(MathUtil.clamp(pivotPID.calculate(PivotMotor.getPosition().getValueAsDouble(), Position), -.9, .9)); // Set the pivot motor to the calculated PID value
-    //         }).until(() -> pivotPID.atSetpoint());
-    // }
+    public void moveDown() {
+        pivotMotor.set(Constants.CoralPivot.PIVOT_SPEED);
+    }
+
+    public void setDefault() {
+        pivotMotor.set(0);
+    }
+
+    public void set(double speed) {
+        pivotMotor.set(speed);
+    }
 }

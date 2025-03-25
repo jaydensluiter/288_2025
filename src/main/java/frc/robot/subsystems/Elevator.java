@@ -2,14 +2,12 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-import java.util.function.BooleanSupplier;
-
 import com.revrobotics.spark.SparkMax;
 
 import edu.wpi.first.wpilibj2.command.Command;
 
 import frc.robot.Constants;
-
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.Encoder;
 
@@ -31,7 +29,7 @@ public class Elevator extends SubsystemBase {
             Constants.Elevator.kI,
             Constants.Elevator.kD
         );
-
+        elevatorPID.setTolerance(Constants.Elevator.kTolerance);
         resetEncoder();
     }
 
@@ -43,17 +41,21 @@ public class Elevator extends SubsystemBase {
         return elevatorEncoder.getDistance();
     }
 
-    public BooleanSupplier isAtPosition() {
-        double setPoint = elevatorPID.getSetpoint();
-        return () -> Math.abs(getPosition() - setPoint) < Constants.Elevator.kTolerance;
+    public void setGravity() {
+        elevatorMotor.set(Constants.Elevator.kG);
     }
 
-    public void moveToSetPosition(double position) {
-        elevatorPID.setSetpoint(position);
-        elevatorMotor.set(elevatorPID.calculate(getPosition(), position));
+    public void manualMoveUp() {
+        moveToSetPositionCommand(getPosition() + .25);
+    }
+
+    public void manualMoveDown() {
+        moveToSetPositionCommand(getPosition() - .25);
     }
 
     public Command moveToSetPositionCommand(double position) {
-        return run(() -> moveToSetPosition(position)).until(isAtPosition());
+        return run(() -> {
+            elevatorMotor.set(MathUtil.clamp(elevatorPID.calculate(elevatorEncoder.getDistance(), position), -0.9, 0.9));
+        }).until(() -> elevatorPID.atSetpoint());
     }
 }

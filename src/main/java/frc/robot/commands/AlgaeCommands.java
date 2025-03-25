@@ -5,7 +5,7 @@ import frc.robot.subsystems.Algae;
 import edu.wpi.first.wpilibj2.command.Command;
 import static edu.wpi.first.wpilibj2.command.Commands.run;
 
-public class AlgaeCommands {
+public final class AlgaeCommands {
     private static Algae algae;
 
     public static void createCommands(RobotContainer robotContainer) {
@@ -27,4 +27,13 @@ public class AlgaeCommands {
     public static Command outtake() {
         return run(() -> algae.outtake());
     }
+
+    public static Command stopIntake() {
+        return run(() -> algae.stopIntake());
+    }
+
+    public static Command stopWrist() {
+        return run(() -> algae.stopWrist());
+    }
+
 }
