@@ -14,7 +14,7 @@ public final class Constants {
 
         public static final double kTolerance = .1;
 
-        public static final double kStow = 0;
+        public static final double kStow = 0; 
         public static final double kLoad = 12000;
         public static final double kStab = 500;
         public static final double kL2 = 11000;
